@@ -1,0 +1,14 @@
+slides > slide:not(.nobackground):after {
+  content: ""
+}
+
+body, td {
+   font-family: "Times New Roman", Times, serif;
+   background-color: white;
+   font-size: 12px;
+   margin: 18px;
+}
+
+tt, code, pre {
+   font-family: 'Droid Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}

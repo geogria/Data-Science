@@ -1,0 +1,142 @@
+---
+title: "Introduction to GPU Computing"
+author: "Yang Yang"
+date: "October 18th, 2015"
+output:
+  ioslides_presentation: 
+    css: custom.css
+    mathjax : default
+    self_contained : yes
+    keep_md: yes
+    widescreen: no
+
+---
+```{r setup, echo=F,include=F}
+knitr::opts_chunk$set(comment = NA, highlight=T)
+library(Rcpp)
+```
+
+## What is GPU Computing?
+- GPU: Graphic processing unit
+
+<div align="center">
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=ZrJeYFxpUyQ
+" target="_blank"><img src="http://img.youtube.com/vi/ZrJeYFxpUyQ/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="440" height="380" border="10" /></a>
+</div>
+
+
+## Getting Started
+- Desktop/Laptop/Server with a stand-alone GPU card
+- Linux/Windows 
+- Basic knowledge of C/C++
+- [CUDA toolkit](https://developer.nvidia.com/cuda-toolkit)
+
+## Terminology
+- Device: GPU and its memory
+- Host: CPU and its memory
+
+## Processing Flow
+1. Copy input data from host to device
+2. Execute code on GPU
+3. Copy output data from device to host
+
+## Hello World
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+//GPU function, execute on GPU(device)
+ __global__ void myfunction(void) 
+{
+}
+//standard C function, execute on CPU(host)
+int main(void) 
+{
+	int blockSize = 1, gridSize =1;
+	myfunction<<<gridSize, blockSize>>>();
+	printf("Hello World!\n");
+	return 0;
+}
+```
+
+## Hello World
+- `__global__ void myfunction(void)` defines GPU function 
+- Call GPU function through host:  
+`myfunction<<<gridSize, blockSize>>>()`
+
+
+## Block and Threads
+`<<<gridSize, blockSize>>>` 
+
+- `gridSize` : the number of blocks
+- `blockSize` : the number of threads in each block
+- `blockSize` CANNOT be larger than the number of GPU cores on your hardware
+
+
+## Block and Threads: Adding Two Vectors
+- Two vectors of length 10,000
+- Block size 500, 20 blocks
+- See `vector_add_R.cu` for details
+
+## Calling CUDA function from `R`
+In terminal:
+```
+nvcc -L /usr/lib/R/lib -lR --shared -Xcompiler -fPIC 
+-o vecadd_R.so vector_add_R.cu
+```
+
+In `R`, write a wrapper function
+```R
+vecadd_R_cuda <- function(a, b){
+	length = length(a)
+	if(!is.loaded("vecadd_cuda")) {
+    	dyn.load("vecadd_R.so")
+  	}
+  	c = rep(0, length)
+  	out <- .C("vecadd_cuda", as.double(a),as.double(b),
+  	as.double(c), as.integer(length))
+  	return(out[[3]])
+}
+```
+
+## Error Handling in CUDA
+```C
+#define cudaCheckErrors(msg) \
+    do { \
+        cudaError_t __err = cudaGetLastError(); \
+        if (__err != cudaSuccess) { \
+            fprintf(stderr, "Fatal error: %s (%s at %s:%d)\n", \
+                msg, cudaGetErrorString(__err), \
+                __FILE__, __LINE__); \
+            fprintf(stderr, "*** FAILED - ABORTING\n"); \
+            exit(1); \
+        } \
+    } while (0)
+```
+## Error Handling in CUDA
+Check error after each CUDA function, if an error occurs, print a message
+```C
+myfunction<<<gridSize, blockSize>>>();
+cudaCheckErrors("hello world fail");
+```
+```C
+cudaMalloc((void **) &dev_data, NTHREADS*288*sizeof(float));
+cudaCheckErrors("cuda malloc dev_data fail");
+```
+
+## CUDA and Its Application in Statistics
+- MCMC simulation: run 7 million MCMC chains simultaneously
+- Random forest
+- SVM
+- Logistic regression
+- Deep learning and more
+
+## Limitation of CUDA
+- Copying data between device and host is very expensive
+- Memory is very limited on GPU (1-2GB, shared by 1000 cores)
+
+
+##
+**Questions?**
+
