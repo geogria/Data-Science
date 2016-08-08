@@ -8,11 +8,11 @@ Date	    Speaker   	Topic
 
 2015-11-15	| Si | Learning Deep Architectures for AI
 
-2015-12-6	| Martin	| Collaborative Filtering
-
 2016-03-06	| Ying	| Introduction to Spark and MLib
 
-2016-03-19
+2016-08-07   | Martin | Real Time Bidding
+
+2016-08-21  | Si Peng | 
 
 
 
